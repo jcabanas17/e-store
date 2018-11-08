@@ -17,6 +17,21 @@ export default class StoreItem extends React.Component {
   render() {
     return (
       <View style={styles.container}>
+        <Text style={styles.titleText}>{this.props.title}</Text>
+        <Image source={this.props.image} style={styles.img}/>
+        <TouchableOpacity style={styles.touchableOpactiy} onPress={this.props.handleButtonPress}>
+            <Text style={styles.addToCart}>Add To Cart</Text>
+            <Text style={styles.priceText}>{'$' + this.props.price}</Text>
+        </TouchableOpacity>
+      </View>
+
+    );
+  }
+}
+
+{/*
+  VERSION 1 Shopping Cards
+      <View style={styles.container}>
         <View style={styles.componentContainer}>
           <View style={styles.leftSide}>
             <Text style={styles.titleText}>{this.props.title}</Text> 
@@ -39,10 +54,53 @@ export default class StoreItem extends React.Component {
           </View>
         </TouchableOpacity>
       </View>
-    );
-  }
-}
+*/}
+
 const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    width: 125,
+    height: 206,
+    backgroundColor: 'transparent',
+    marginLeft: 5,
+    marginRight: 5
+  },
+  touchableOpactiy: {
+    width: '100%',
+    padding: 4,
+    backgroundColor: '#DDD',
+    borderColor: '#AAA',
+    borderWidth: 3,
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  addToCart: {
+    fontSize: 14,
+    color: 'black'
+  },
+  priceText: {
+    fontSize: 24,
+    color: 'green',
+  },
+  img: {
+    width: '100%',
+    height: 125,
+    marginRight: 0,
+    borderRadius: 5,
+  },  
+  titleText: {
+    fontSize: 18,
+    paddingTop: 0,
+    // borderColor: 'black',
+    // borderWidth: 1,
+    fontWeight: 'bold',
+  },
+});
+
+{/*
+  VERSION 1 Shopping Cards
   componentContainer: {
     flexDirection: 'row',
     backgroundColor: '#CCCCCC',
@@ -56,13 +114,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 5,
     borderTopRightRadius: 5,
   },
-  titleText: {
-    fontSize: 20,
-    paddingTop: 0,
-    borderColor: 'black',
-    // borderWidth: 1,
-    // fontWeight: 'bold',
-  },
+
   priceText: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -100,4 +152,4 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: 'white'
   }
-});
+*/}
