@@ -158,7 +158,7 @@ export default class HomeScreen extends React.Component {
               price={2.99}
               image={require("../assets/images/sushi.png")}
               description="Really Yummy Food"
-              handleButtonPress={this.handleButtonPress.bind(null, {name: 'Sushi'})}
+              handleButtonPress={this.handleButtonPress.bind(null, {name: 'Sushi3'})}
               storeID={0}
               key={10}
             />
