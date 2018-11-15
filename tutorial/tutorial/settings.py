@@ -25,7 +25,9 @@ SECRET_KEY = 'b-vta(u$=$l1)nbf*qz06l6%js3z60g)viu&jj^zu7^ba_hn^z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '172.20.10.2',
+]
 
 
 # Application definition
