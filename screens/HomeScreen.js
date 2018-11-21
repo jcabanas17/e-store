@@ -34,7 +34,7 @@ export default class HomeScreen extends React.Component {
   };
 
   componentDidMount() {
-    return fetch('http://172.20.10.2:9999/items')
+    return fetch('http://172.20.10.8:9999/items')
     .then((response) => response.json())
     .then((responseJson) => {
       result = responseJson.results;
