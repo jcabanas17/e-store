@@ -1,10 +1,16 @@
-from snippets.models import Item
-from snippets.serializers import ItemSerializer
+from snippets.models import Item, Store
+from snippets.serializers import ItemSerializer, StoreSerializer
 from rest_framework import viewsets
+from rest_framework.decorators import api_view
+
 
 class ItemViewSet(viewsets.ModelViewSet):
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
+
+class StoreViewSet(viewsets.ModelViewSet):
+	queryset = Store.objects.all()
+	serializer_class = StoreSerializer
 
 ################# TUTORIAL CODE #################
 # from snippets.models import Snippet
@@ -12,7 +18,6 @@ class ItemViewSet(viewsets.ModelViewSet):
 # from rest_framework import permissions
 # from django.contrib.auth.models import User
 # from snippets.permissions import IsOwnerOrReadOnly
-# from rest_framework.decorators import api_view
 # from rest_framework.response import Response
 # from rest_framework.reverse import reverse
 # from rest_framework import renderers

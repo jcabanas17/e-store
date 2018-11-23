@@ -1,12 +1,19 @@
 from rest_framework import serializers
-from snippets.models import Item
+from snippets.models import Item, Store
 
 
 class ItemSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Item
-        fields = ('url', 'id', 'created', 'title', 'price')
+        fields = ('url', 'id', 'created', 'title', 'price', 'store')
+
+class StoreSerializer(serializers.HyperlinkedModelSerializer):
+
+    class Meta:
+        model = Store
+        fields = ('url', 'id', 'created', 'name', 'lat', 'lng')
+
 
 ################# TUTORIAL CODE #################
 # from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES

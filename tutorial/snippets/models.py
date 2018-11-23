@@ -4,6 +4,22 @@ class Item(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=100, blank=True, default='')
     price = models.DecimalField(max_digits=6, decimal_places=2)
+    store = models.ForeignKey('Store', on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        ordering = ('created',)
+
+class Store(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=100, blank=True, default='')
+    lat = models.DecimalField(max_digits=9, decimal_places=6)
+    lng = models.DecimalField(max_digits=9, decimal_places=6)
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         ordering = ('created',)
