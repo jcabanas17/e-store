@@ -1,8 +1,8 @@
-from snippets.models import Item, Store
-from snippets.serializers import ItemSerializer, StoreSerializer
-from rest_framework import viewsets
+from snippets.models import Item, Store, Order, StripeUser
+from snippets.serializers import ItemSerializer, StoreSerializer, OrderSerializer, UserSerializer, StripeUserSerializer
+from rest_framework import viewsets, generics
 from rest_framework.decorators import api_view
-
+from django.contrib.auth.models import User
 
 class ItemViewSet(viewsets.ModelViewSet):
     queryset = Item.objects.all()
@@ -11,6 +11,19 @@ class ItemViewSet(viewsets.ModelViewSet):
 class StoreViewSet(viewsets.ModelViewSet):
 	queryset = Store.objects.all()
 	serializer_class = StoreSerializer
+
+class OrderViewSet(viewsets.ModelViewSet):
+	queryset = Order.objects.all()
+	serializer_class = OrderSerializer
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class StripeUserViewSet(viewsets.ModelViewSet):
+    queryset = StripeUser.objects.all()
+    serializer_class = StripeUserSerializer
+
 
 ################# TUTORIAL CODE #################
 # from snippets.models import Snippet

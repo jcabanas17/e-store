@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from snippets.models import Item, Store
-
+from snippets.models import Item, Store, Order, StripeUser
+from django.contrib.auth.models import User
 
 class ItemSerializer(serializers.HyperlinkedModelSerializer):
 
@@ -13,6 +13,24 @@ class StoreSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Store
         fields = ('url', 'id', 'created', 'name', 'lat', 'lng')
+
+class OrderSerializer(serializers.HyperlinkedModelSerializer):
+
+    class Meta:
+        model = Order
+        fields = ('url', 'id', 'created', 'orderer', 'deliverer', 'store', 'deliv_lat', 'deliv_lng')
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('url', 'id', 'username', 'password')
+
+class StripeUserSerializer(serializers.HyperlinkedModelSerializer):
+
+    class Meta:
+        model = StripeUser
+        fields = ('url', 'id', 'created', 'user', 'stripe_account_id')
 
 
 ################# TUTORIAL CODE #################

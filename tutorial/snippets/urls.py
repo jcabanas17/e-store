@@ -6,6 +6,10 @@ from snippets import views
 router = DefaultRouter()
 router.register(r'items', views.ItemViewSet)
 router.register(r'stores', views.StoreViewSet)
+router.register(r'orders', views.OrderViewSet)
+router.register(r'users', views.UserViewSet)
+router.register(r'stripeusers', views.StripeUserViewSet)
+
 
 # The API URLs are now determined automatically by the router.
 urlpatterns = [

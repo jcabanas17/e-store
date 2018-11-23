@@ -24,6 +24,22 @@ class Store(models.Model):
     class Meta:
         ordering = ('created',)
 
+class Order(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    orderer = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='orderer')
+    deliverer = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='deliverer')
+    store = models.OneToOneField('Store', on_delete=models.CASCADE)
+    deliv_lat = models.DecimalField(max_digits=9, decimal_places=6)
+    deliv_lng = models.DecimalField(max_digits=9, decimal_places=6)
+
+    def __str__(self):
+        return 'delivery for ' + orderer + ' on ' + str(created)
+
+class StripeUser(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    user = models.OneToOneField('auth.User', on_delete=models.CASCADE)
+    stripe_account_id = models.CharField(max_length=100)
+
 ################# TUTORIAL CODE #################
 # from pygments.lexers import get_all_lexers
 # from pygments.styles import get_all_styles
