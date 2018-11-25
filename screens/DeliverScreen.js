@@ -6,7 +6,6 @@ import {
   Platform,
   SegmentedControlIOS,
 } from 'react-native';
-import DeliverItem from '../components/DeliverItem';
 import { ExpoLinksView } from '@expo/samples';
 
 export default class LinksScreen extends React.Component {
@@ -26,7 +25,8 @@ export default class LinksScreen extends React.Component {
           Platform.OS === 'ios' 
           ? 
           <SegmentedControlIOS
-            values={['U-Store', 'C-Store', 'Wawa']}
+            values={['U-Store']}
+            // , 'C-Store', 'Wawa']}
             selectedIndex={this.state.selectedIndex}
             onChange={(event) => {
               this.setState({selectedIndex: event.nativeEvent.selectedSegmentIndex});
@@ -38,7 +38,6 @@ export default class LinksScreen extends React.Component {
         }
         </View>
         <ScrollView contentContainerStyle={styles.contentContainer}>
-          <DeliverItem/>
         </ScrollView>
         
       </View>

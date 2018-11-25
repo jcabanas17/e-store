@@ -5,7 +5,7 @@ import { createStackNavigator, createBottomTabNavigator } from 'react-navigation
 import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import DeliverScreen from '../screens/DeliverScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+// import SettingsScreen from '../screens/SettingsScreen';
 
 const HomeStack = createStackNavigator({
   Home: HomeScreen,
@@ -39,21 +39,25 @@ DeliverStack.navigationOptions = {
   ),
 };
 
-const SettingsStack = createStackNavigator({
-  Settings: SettingsScreen,
-});
+// const SettingsStack = createStackNavigator({
+//   Settings: SettingsScreen,
+// });
 
-SettingsStack.navigationOptions = {
-  tabBarLabel: 'Settings',
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={Platform.OS === 'ios' ? `ios-options${focused ? '' : '-outline'}` : 'md-options'}
-    />
-  ),
-};
+// SettingsStack.navigationOptions = {
+//   tabBarLabel: 'Settings',
+//   tabBarIcon: ({ focused }) => (
+//     <TabBarIcon
+//       focused={focused}
+//       name={Platform.OS === 'ios' ? `ios-options${focused ? '' : '-outline'}` : 'md-options'}
+//     />
+//   ),
+// };
 
 export default createBottomTabNavigator({
   HomeStack,
   DeliverStack,
 });
+
+
+// CHANGE THIS TO https://snack.expo.io/@react-navigation/auth-flow-v3 STYLE AUTH FLOW
+// SIMPLIFY EACH PAGE - BUILD WIDE TO NARROW

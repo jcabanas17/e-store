@@ -11,11 +11,13 @@ import {
   Button,
   SegmentedControlIOS,
   Alert,
-  TextInput
+  TextInput,
+  SectionList,
 } from 'react-native';
 import StoreItem from '../components/StoreItem';
+import TabBarIcon from '../components/TabBarIcon';
 
-import { WebBrowser } from 'expo';
+import { WebBrowser, Icon } from 'expo';
 
 import { MonoText } from '../components/StyledText';
 
@@ -40,10 +42,15 @@ export default class HomeScreen extends React.Component {
       result = responseJson.results;
       this.setState({
         isLoading: false,
-        itemList: result,
+        response: result,
 
       }, function(){
       });
+    })
+    .then(() => {
+      this.setState({
+        itemList: this.generateSections()
+      })
     })
     .catch((error) =>{
       console.error(error);
@@ -54,11 +61,26 @@ export default class HomeScreen extends React.Component {
     Alert.alert(itemData.name + ': added to cart');
   };
 
+
+  generateSections() {
+    data = []
+    if(this.state.isLoading === false) {
+      for (var i = 0; i < this.state.response.length; i++) {
+        if (String(this.state.response[i].title).toLowerCase().indexOf(String(this.state.searchText).toLowerCase()) !== -1) {
+          data.push({
+            title: this.state.response[i].title, 
+            price: this.state.response[i].price,
+          })
+        }
+      }
+    }
+    sections = [{title: 'Everything', data: data}]
+    return sections
+  }
+
   render() {
     return (
-      
       <View style={styles.screenContainer}>         
-        <Text style={styles.debugText}>{JSON.stringify(this.state.itemList)}</Text>
         <TextInput
           placeholder="Search"
           onChangeText={(searchText) => this.setState({searchText})}
@@ -69,7 +91,8 @@ export default class HomeScreen extends React.Component {
           Platform.OS === 'ios' 
           ? 
           <SegmentedControlIOS
-            values={['U-Store', 'C-Store', 'Wawa']}
+            values={['U-Store']}
+            // , 'C-Store', 'Wawa']}
             selectedIndex={this.state.selectedIndex}
             onChange={(event) => {
               this.setState({selectedIndex: event.nativeEvent.selectedSegmentIndex});
@@ -80,15 +103,35 @@ export default class HomeScreen extends React.Component {
           <Button title="segmented controler unavailable for android"></Button>
         }
         </View>
-        {/* SCROLLABLE SHOPPING CONTAINER */}
+        <SectionList
+          sections={this.generateSections()}
+          renderItem={({item}) => 
+            <View style={styles.itemContainer}>
+              <View style={styles.itemDetailContainer}>
+                <Text style={styles.itemTitle}>{item.title}</Text>
+                <Text style={styles.itemPrice}>${item.price}</Text> 
+
+                <Icon.Ionicons
+                  name={Platform.OS === 'ios' ? 'ios-arrow-dropdown-circle' : 'md-arrow-dropdown-circle'}
+                  size={26}
+                  style={{ marginLeft: 10}}
+                  color={'gray'}
+                />
+              </View>
+              <TouchableOpacity style={styles.addToCartButton}><Text style={styles.addToCartText}>Add</Text></TouchableOpacity>
+            </View>
+          }
+          renderSectionHeader={({section}) => <Text style={styles.sectionHeader}>{section.title}</Text>}
+          keyExtractor={(item, index) => index}
+        />
+        {/* SCROLLABLE SHOPPING CONTAINER 
         <ScrollView contentContainerStyle={styles.shoppingContainer}>
           <View style={styles.storeWrapper}>
             <Text style={styles.departmentTitle}>Snacks</Text>
 
             <ScrollView horizontal={true} contentContainerStyle={styles.departmentContainer}> 
-            {/* ITEMS RENDERED HERE */}
             {this.state.isLoading === false ? 
-            this.state.itemList.map((item, index) => 
+            this.state.response.map((item, index) => 
               <StoreItem 
                 title={item.title}
                 price={item.price}
@@ -102,10 +145,10 @@ export default class HomeScreen extends React.Component {
             </ScrollView>
           </View>
         </ScrollView>
-
+*/}
 
 {/* DEFUNCT
-          {this.state.itemList.map((item, key) => {
+          {this.state.response.map((item, key) => {
             
             return (
 
@@ -201,5 +244,48 @@ const styles = StyleSheet.create({
   },
   debugText: {
     fontSize: 14
+  },
+  sectionHeader: {
+    paddingTop: 5,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingBottom: 5,
+    fontSize: 16,
+    fontWeight: 'bold',
+    backgroundColor: '#DDD',
+  },
+  itemTitle: {
+    // padding: 10,
+    fontSize: 20,
+    marginLeft: 15
+    // height: 44,
+  },
+  itemPrice: {
+    // padding: 10,
+    marginLeft: 10,
+    fontSize: 20,
+    // height: 44,
+    color: 'green'
+  },
+  addToCartText: {
+    // padding: 10,
+    fontSize: 20,
+    // height: 44,
+  },
+  addToCartButton: {
+    backgroundColor: 'skyblue',
+    padding: 5,
+    marginRight: 15
+  },
+  itemContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    height: 50
+  },
+  itemDetailContainer: {
+    flexDirection: 'row',
   }
+
+
 });
