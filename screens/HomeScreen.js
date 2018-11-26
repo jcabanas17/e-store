@@ -205,6 +205,7 @@ export default class HomeScreen extends React.Component {
         {this.state.isLoading === false ?
         this.state.response.map((item, index1, index2, index3) => {
           return(
+            item.title.toLowerCase().indexOf(String(this.state.searchText).toLowerCase()) !== -1 ?
             <View key={index1} style={styles.itemContainer}>
               <Text key={index1} style={styles.itemTitle}>{item.title}</Text>
               <Text key={index2} style={styles.itemPrice}>${item.price}</Text>
@@ -217,6 +218,7 @@ export default class HomeScreen extends React.Component {
                 }
               </TouchableOpacity>
             </View>
+            :''
           )
         }
         )

@@ -25,7 +25,7 @@ export default class DeliverScreen extends React.Component {
     posError: null,
     isLoadingOrders: true,
   }
-// comment
+
   componentDidMount() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
