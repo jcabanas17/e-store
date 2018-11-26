@@ -134,7 +134,7 @@ export default class HomeScreen extends React.Component {
     key = 0
     for (var item in this.state.response) {
       if (this.state.response[item].count > 0) {
-        comps.push(<Text key={key} style={{fontSize: 18}}>{this.state.response[item].count} x {this.state.response[item].title}: ${this.state.response[item].price*this.state.response[item].count}</Text>)
+        comps.push(<Text key={key} style={{fontSize: 18}}>{this.state.response[item].count} x {this.state.response[item].title}: ${(this.state.response[item].price*this.state.response[item].count).toFixed(2)}</Text>)
       }
       key++
     }
