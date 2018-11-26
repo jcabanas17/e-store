@@ -14,6 +14,11 @@ import Delivery from '../components/Delivery';
 
 
 export default class DeliverScreen extends React.Component {
+  constructor (props) {
+    super(props)
+    this.handleDelete = this.handleDelete.bind(this)
+  }
+
   static navigationOptions = {
     title: 'Deliver',
   };
@@ -26,32 +31,53 @@ export default class DeliverScreen extends React.Component {
     isLoadingOrders: true,
   }
 
-  componentDidMount() {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
+  handleDelete(url) {
+    fetch(url, {method: 'DELETE'})
+    .then(() => {
+      fetch('http://172.20.10.8:9999/orders')
+      .then((response) => response.json())
+      .then((responseJson) => {
+        result = responseJson.results;
         this.setState({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          posError: null,
+          isLoadingOrders: false,
+          orderResponse: result,
+        }, function(){
         });
-      },
-      (error) => this.setState({ posError: error.message }),
-      { enableHighAccuracy: false, timeout: 20000, maximumAge: 1000 },
-    );
-
-    return fetch('http://172.20.10.8:9999/orders')
-    .then((response) => response.json())
-    .then((responseJson) => {
-      result = responseJson.results;
-      this.setState({
-        isLoadingOrders: false,
-        orderResponse: result,
-      }, function(){
-      });
+      })
+      .catch((error) =>{
+        console.error(error);
+      })
     })
-    .catch((error) =>{
-      console.error(error);
-    });
+  }
+
+  componentDidMount() {
+    this.props.navigation.addListener('willFocus', (playload)=>{
+      fetch('http://172.20.10.8:9999/orders')
+      .then((response) => response.json())
+      .then((responseJson) => {
+        result = responseJson.results;
+        this.setState({
+          isLoadingOrders: false,
+          orderResponse: result,
+        }, function(){
+        });
+      })
+      .catch((error) =>{
+        console.error(error);
+      });
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.setState({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            posError: null,
+          });
+        },
+        (error) => this.setState({ posError: error.message }),
+        { enableHighAccuracy: false, timeout: 20000, maximumAge: 1000 },
+      )
+    })
+    return null
   }
 
   distance(lat1, lon1, lat2, lon2, unit) {
@@ -100,7 +126,7 @@ export default class DeliverScreen extends React.Component {
         <ScrollView contentContainerStyle={styles.shoppingContainer}>
         {this.state.isLoadingOrders === false ?
         this.state.orderResponse.map((order, index) => {
-          return(<Delivery key={index} url={order.url} lat={this.state.latitude} lng={this.state.longitude}/>)
+          return(<Delivery key={index} url={order.url} lat={this.state.latitude} lng={this.state.longitude} delete={() => this.handleDelete(order.url)}/>)
         }
         )
         : ''}

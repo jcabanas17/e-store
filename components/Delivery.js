@@ -10,6 +10,10 @@ import { Icon } from 'expo';
 
 
 export default class Delivery extends React.Component {
+  constructor (props) {
+    super(props)
+  }
+
   state = {
     isLoading: true,
     isLoadingStoreName: true
@@ -72,18 +76,19 @@ export default class Delivery extends React.Component {
     })
     .catch((error) =>{
       console.error(error);
-    });
+    })
   }
 
   render() {
     return (
       this.state.isLoading === false ?
       <View style={styles.container}>
+        <Text>{this.state.deleteResponse}</Text>
         <View style={styles.leftContainer}>
           <View style={styles.itemCountContainer}>
             <Text style={styles.itemCount}>{this.state.items.length}</Text>
           </View>
-          <Text style={styles.itemCountText}>item{this.state.items.length > 1 ? 's' : ''}</Text>
+          <Text style={styles.itemCountText}>item{this.state.items.length !== 1 ? 's' : ''}</Text>
           <Text style={styles.orderTotal}>${this.state.orderTotal}</Text>
         </View>
         <View style={styles.buttonContainer}>
@@ -106,7 +111,10 @@ export default class Delivery extends React.Component {
               this.props.lat,
               this.props.lng)/1.4/60*2+5).toFixed(0))} min</Text>
           </View>
-          <TouchableOpacity style={styles.pickUpButton}><Text style={styles.pickUpText}>Pick Up</Text></TouchableOpacity>
+          <View style={styles.rightButtonContainer}>
+            <TouchableOpacity style={styles.pickUpButton}><Text style={styles.pickUpText}>Pick Up</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.delButton} onPress={this.props.delete}><Text style={styles.pickUpText}>X</Text></TouchableOpacity>
+          </View>
         </View>
       </View>
       : <Text>'loading'</Text>
@@ -172,6 +180,18 @@ const styles = StyleSheet.create({
   buttonContainer: {
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  rightButtonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  delButton: {
+    backgroundColor: 'red',
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 10,
+    paddingRight: 10,
+    borderRadius: 5
   }
 })
 

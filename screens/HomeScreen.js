@@ -121,9 +121,11 @@ export default class HomeScreen extends React.Component {
         orderResponse: responseJson
       })
     })
+    .then(() => {this.props.navigation.navigate('Waiting')})
     .catch((error) =>{
       console.error(error);
     });
+
   }
 
   orderDetails() {
@@ -198,7 +200,7 @@ export default class HomeScreen extends React.Component {
           <Button title="segmented controler unavailable for android"></Button>
         }
         </View>
-        <Text>{JSON.stringify(this.state.orderResponse)}</Text>
+        {/*<Text>{JSON.stringify(this.state.orderResponse)}</Text>*/}
 
         {this.state.confirmOrder === false ?
         <ScrollView contentContainerStyle={styles.shoppingContainer}>
@@ -239,7 +241,7 @@ export default class HomeScreen extends React.Component {
         </View>
         :
         <View style={styles.confirmOrderContainer}>
-          <Text style={{fontSize: 24}}>Confirm Order</Text>
+          <Text style={styles.confirmOrderTitle}>Confirm Order</Text>
           {this.orderDetails()}
           <TouchableOpacity style={styles.checkOutButton} onPress={()=>this.placeOrder()}>
             <Text style={styles.checkOutButtonText}>Order</Text>
@@ -261,13 +263,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
-  developmentModeText: {
-    marginBottom: 20,
-    color: 'rgba(0,0,0,0.4)',
-    fontSize: 14,
-    lineHeight: 19,
-    textAlign: 'center',
-  },
   segmentedControl: {
     width: "100%",
     height: 40,
@@ -278,54 +273,17 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     marginRight: 10
   },
-  departmentTitle: {
-    fontSize: 24,
-    color: 'black',
-    backgroundColor: '#EEE',
-    height: 30,
-    paddingLeft: 10,
-    paddingTop: 2,
-    textAlign: 'center'
-  },
-  department: {
-    borderColor: 'black',
-    borderWidth: 1,
-  },
-  departmentContainer: {
-    marginBottom: 5
-  },
-  storeWrapper: {
-    width: '100%'
-  },
-  debugText: {
-    fontSize: 14
-  },
-  sectionHeader: {
-    paddingTop: 5,
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingBottom: 5,
-    fontSize: 16,
-    fontWeight: 'bold',
-    backgroundColor: '#DDD',
-  },
   itemTitle: {
-    // padding: 10,
     fontSize: 20,
     marginLeft: 15
-    // height: 44,
   },
   itemPrice: {
-    // padding: 10,
     marginLeft: 10,
     fontSize: 20,
-    // height: 44,
     color: 'green'
   },
   addToCartText: {
-    // padding: 10,
     fontSize: 20,
-    // height: 44,
   },
   addToCartButton: {
     backgroundColor: 'skyblue',
@@ -342,8 +300,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#EEE',
-    // borderColor: 'black',
-    // borderWidth: 1,
     marginBottom: 5,
     marginTop: 5,
     paddingTop: 5,
@@ -391,6 +347,10 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: 'center',
     justifyContent: 'space-around',
+  },
+  confirmOrderTitle: {
+    fontSize: 24,
+    marginBottom: 10
   }
 
 
