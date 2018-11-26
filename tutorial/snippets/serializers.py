@@ -18,7 +18,7 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('url', 'id', 'created', 'orderer', 'deliverer', 'store', 'deliv_lat', 'deliv_lng')
+        fields = ('url', 'id', 'created', 'orderer', 'deliverer', 'store', 'deliv_lat', 'deliv_lng', 'items', 'orderTotal')
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
 

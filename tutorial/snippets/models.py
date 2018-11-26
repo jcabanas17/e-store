@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime
 
 class Item(models.Model):
     created = models.DateTimeField(auto_now_add=True)
@@ -26,11 +27,20 @@ class Store(models.Model):
 
 class Order(models.Model):
     created = models.DateTimeField(auto_now_add=True)
-    orderer = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='orderer')
-    deliverer = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='deliverer')
-    store = models.OneToOneField('Store', on_delete=models.CASCADE)
+    orderer = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='orderer', null=True, blank=True)
+    deliverer = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='deliverer', null=True, blank=True)
+    store = models.ForeignKey('Store', on_delete=models.CASCADE)
     deliv_lat = models.DecimalField(max_digits=9, decimal_places=6)
     deliv_lng = models.DecimalField(max_digits=9, decimal_places=6)
+    items = models.ManyToManyField(Item, blank=True)
+
+    @property
+    def orderTotal(self):
+        total = 0
+        for item in self.items.all():
+            total += item.price
+            
+        return total
 
     def __str__(self):
         return 'delivery for ' + orderer + ' on ' + str(created)
