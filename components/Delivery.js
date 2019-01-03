@@ -4,7 +4,8 @@ import {
   View,
   StyleSheet,
   Platform,
-  TouchableOpacity
+  TouchableOpacity,
+  Alert
 } from 'react-native';
 import { Icon } from 'expo';
 
@@ -16,107 +17,133 @@ export default class Delivery extends React.Component {
 
   state = {
     isLoading: true,
-    isLoadingStoreName: true
+    isLoadingOrderer: true,
+    isLoadingStore: true,
+    isLoadingItems: true,
+
+    items: [],
+    price: 0
   }
 
-  storeName(storeURL) {
+  fetchStore(storeURL) {
     return fetch(storeURL)
     .then((response) => response.json())
     .then((responseJson) => {
       result = responseJson;
       this.setState({
-        isLoadingStoreName: false,
-        storeName: result.name
-      }, function(){
-      });
+        isLoadingStore: false,
+        store: result
+      })
     })
     .catch((error) =>{
       console.error(error);
     });
   }
-
-  distance(lat1, lon1, lat2, lon2, unit) {
-    if ((lat1 == lat2) && (lon1 == lon2)) {
-      return 0;
+  fetchOrderer(ordererURL) {
+    if (ordererURL == null) {
+      this.setState({
+        isLoadingOrderer: false,
+        orderer: null
+      })
+      return Promise.resolve();
     }
-    else {
-      var radlat1 = Math.PI * lat1/180;
-      var radlat2 = Math.PI * lat2/180;
-      var theta = lon1-lon2;
-      var radtheta = Math.PI * theta/180;
-      var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-      if (dist > 1) {
-        dist = 1;
-      }
-      dist = Math.acos(dist);
-      dist = dist * 180/Math.PI;
-      dist = dist * 60 * 1.1515;
-      if (unit=="K") { dist = dist * 1.609344 }
-      if (unit=="N") { dist = dist * 0.8684 }
-      return dist;
-    }
-  }
-
-  componentDidMount() {
-    return fetch(this.props.url)
+    return fetch(ordererURL)
     .then((response) => response.json())
     .then((responseJson) => {
-      result = responseJson;
-      // this.storeName(result.store)
+      result = responseJson
       this.setState({
-        isLoading: false,
-        response: result,
-        orderer: result.orderer,
-        deliverer: result.deliverer,
-        store: result.store,
-        orderTotal: result.orderTotal,
-        items: result.items,
-      }, function(){
-      });
+        isLoadingOrderer: false,
+        orderer: result
+      })
     })
-    .catch((error) =>{
+    .catch((error) => {
+      console.error(error);
+    })
+  }
+  fetchItem(itemURL) {
+    if (itemURL == null) {
+      this.setState({
+        items: []
+      })
+      return Promise.resolve();
+    }
+    return fetch(itemURL)
+    .then((response) => response.json())
+    .then((responseJson) => {
+      this.state.price += parseFloat(responseJson.price)
+      if (this.state.items == []){
+        this.setState({
+          items: [responseJson],
+          isLoadingItems: false,
+          price: this.state.price
+        })  
+      }
+      else {
+        items = this.state.items
+        items.push(responseJson)
+        this.setState({
+          items: items,
+          isLoadingItems: false
+        }) 
+      }
+    })
+    .catch((error) => {
       console.error(error);
     })
   }
 
+  getItems(){
+    for (var item in this.props.json.items) {
+      this.fetchItem(this.props.json.items[item])
+    }
+  }
+
+  componentDidMount() {
+    return this.fetchOrderer(this.props.json.orderer)
+    .then(() => {
+      this.fetchStore(this.props.json.store)
+      this.getItems()
+    })
+    .then(() => {
+      this.setState({
+        isLoading: false,
+      })
+    })
+  }
+
   render() {
+    let minsActive = Math.ceil((Date.now() - Date.parse(this.props.json.created)) / 60000)
+
     return (
       this.state.isLoading === false ?
       <View style={styles.container}>
-        <Text>{this.state.deleteResponse}</Text>
-        <View style={styles.leftContainer}>
-          <View style={styles.itemCountContainer}>
-            <Text style={styles.itemCount}>{this.state.items.length}</Text>
-          </View>
-          <Text style={styles.itemCountText}>item{this.state.items.length !== 1 ? 's' : ''}</Text>
-          <Text style={styles.orderTotal}>${this.state.orderTotal}</Text>
-        </View>
-        <View style={styles.buttonContainer}>
-          <Text style={styles.earn}>Earn ${((1000*this.distance(
-            this.state.response.deliv_lat,
-            this.state.response.deliv_lng,
-            this.props.lat,
-            this.props.lng)/1.4/60*2+5)*8/60).toFixed(2)}</Text>
-        </View>
-        <View style={styles.rightWrapper}>
-          <View style={styles.rightContainer}>
-            <Icon.Ionicons
-              name={Platform.OS === 'ios' ? 'ios-time' : 'md-time'}
-              size={24}
-              color={'black'}
-            />
-            <Text style={styles.time}>{Number((1000*this.distance(
-              this.state.response.deliv_lat,
-              this.state.response.deliv_lng,
-              this.props.lat,
-              this.props.lng)/1.4/60*2+5).toFixed(0))} min</Text>
-          </View>
-          <View style={styles.rightButtonContainer}>
-            <TouchableOpacity style={styles.pickUpButton}><Text style={styles.pickUpText}>Pick Up</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.delButton} onPress={this.props.delete}><Text style={styles.pickUpText}>X</Text></TouchableOpacity>
-          </View>
-        </View>
+        {this.state.isLoadingItems === false ? '' : <Text>Items Loading</Text>}
+
+        {/* ORDER INFO */}
+        {this.state.isLoadingStore === false ?
+        <Text style={styles.text}>store: {this.state.store.name}</Text>
+        : 'loading'
+        }
+        <Text style={styles.text}>no. items: {this.props.json.items.length}</Text>
+        <Text style={styles.text}>order total: ${this.state.price}</Text>
+        <Text style={styles.text}>time active: {minsActive}min(s)</Text>
+        {this.state.isLoadingOrderer === false ?
+
+        this.state.orderer != null ?
+        <Text style={styles.text}>orderer: {this.state.orderer.username}</Text> : <Text style={styles.text}>orderer: NULL</Text>
+        : 'loading'
+        }
+
+        {/* BUTTON 1 */}
+        <TouchableOpacity style={styles.pickUpButton}>
+          <Text style={styles.buttonText}>pick up</Text>
+        </TouchableOpacity>
+        {/* BUTTON 2 */}
+        <TouchableOpacity style={styles.delButton} onPress={this.props.delete}>
+          <Text style={styles.buttonText}>delete</Text>
+        </TouchableOpacity>
       </View>
+
       : <Text>'loading'</Text>
     );
   }
@@ -125,73 +152,31 @@ export default class Delivery extends React.Component {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
-    flexDirection: 'row',
-    margin: 10,
-    justifyContent: 'space-between'
-  },
-  leftContainer: {
-    alignItems: 'center'
-  },
-  rightContainer: {
-    flexDirection: 'row',
-  },
-  rightWrapper: {
     flexDirection: 'column',
-    alignItems: 'center'
-  },
-  orderTotal: {
-    color: 'green',
-    fontSize: 20,
-  },
-  itemCountContainer: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderColor: 'red',
+    margin: 10,
+    padding: 10,
     borderWidth: 2,
-    borderRadius: 20
+    borderColor: 'black'
   },
-  itemCount: {
-    fontSize: 30,
-  },
-  itemCountText: {
-    fontSize: 10
-  },
-  time: {
-    marginTop: 3,
-    marginLeft: 5,
-    fontSize: 16,
-  },
-  earn: {
-    fontSize: 32,
-  },
-  pickUpButton: {
-    backgroundColor: 'skyblue',
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingLeft: 20,
-    paddingRight: 20,
-    borderRadius: 5
-  },
-  pickUpText: {
+  text:{
     fontSize: 20
   },
-  buttonContainer: {
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  rightButtonContainer: {
-    flexDirection: 'row',
-    alignItems: 'center'
+  buttonText: {
+    fontSize: 20
   },
   delButton: {
     backgroundColor: 'red',
     paddingTop: 10,
     paddingBottom: 10,
-    paddingLeft: 10,
-    paddingRight: 10,
-    borderRadius: 5
-  }
+    alignItems: 'center',
+    margin: 5
+  },
+  pickUpButton: {
+    backgroundColor: 'skyblue',
+    paddingTop: 10,
+    paddingBottom: 10,
+    alignItems: 'center',
+    margin: 5,
+  },
 })
 

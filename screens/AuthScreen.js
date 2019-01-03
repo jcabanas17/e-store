@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { ExpoConfigView } from '@expo/samples';
 
+import { AsyncStorage } from "react-native"
+
 export default class AuthScreen extends React.Component {
   constructor(props) {
     super(props)
@@ -22,12 +24,61 @@ export default class AuthScreen extends React.Component {
     title: 'Authentication',
   };
 
+  componentDidMount() {
+
+  }
+
   onPressModeButton() {
     this.setState({login: !this.state.login});
   }
 
+  async checkToken() {
+    try {
+      const value = await AsyncStorage.getItem('token');
+      if (value !== null) {
+        this.props.navigation.navigate('Main') 
+      }
+      else {
+        // Alert.alert("no credentials found")
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  async storeToken(token) {
+    try {
+      await AsyncStorage.setItem('token', token);
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   onPressLogIn() {
-    this.props.navigation.navigate('Main')
+    // this.props.navigation.navigate('Main')
+    return fetch('http://172.20.10.8:9999/api-auth/', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password,
+      }),
+    })
+    .then((response) => response.json())
+    .then((responseJSON) => {
+      if (responseJSON.hasOwnProperty('token')) {
+        this.storeToken(responseJSON.token)
+        this.checkToken()
+      }
+      else {
+      }
+    })
+    .catch((error) =>{
+      Alert.alert(error);
+    });
   }
 
   onPressSignUp() {
@@ -35,7 +86,9 @@ export default class AuthScreen extends React.Component {
     this.props.navigation.navigate('Auth')
   }
 
-
+  textValue() {
+    return ''
+  }
 
   render() {
     return (
@@ -43,11 +96,10 @@ export default class AuthScreen extends React.Component {
         <Text style={styles.text}>E-Store</Text>
         <TextInput
           style={styles.input}
-          onChangeText={(email) => this.setState({email})}
-          placeholder="Email"
+          onChangeText={(username) => this.setState({username})}
+          placeholder="Username"
           autoCapitalize="none"
           autoCorrect={false}
-          keyboardType="email-address"
         />
         <TextInput
           style={styles.input}

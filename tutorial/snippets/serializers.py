@@ -1,36 +1,43 @@
 from rest_framework import serializers
-from snippets.models import Item, Store, Order, StripeUser
+from snippets.models import Item, Store, Order, OrderItem, StripeUser
 from django.contrib.auth.models import User
-
-class ItemSerializer(serializers.HyperlinkedModelSerializer):
-
-    class Meta:
-        model = Item
-        fields = ('url', 'id', 'created', 'title', 'price', 'store')
 
 class StoreSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Store
-        fields = ('url', 'id', 'created', 'name', 'lat', 'lng')
+        fields = '__all__'
 
-class OrderSerializer(serializers.HyperlinkedModelSerializer):
+class ItemSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
+        model = Item
+        fields = '__all__'
+
+class OrderItemSerializer(serializers.HyperlinkedModelSerializer):
+
+    class Meta:
+        model = OrderItem
+        fields = ('created', 'count', 'order', 'item')
+
+class OrderSerializer(serializers.HyperlinkedModelSerializer):
+    
+    class Meta:
         model = Order
-        fields = ('url', 'id', 'created', 'orderer', 'deliverer', 'store', 'deliv_lat', 'deliv_lng', 'items', 'orderTotal')
+        fields = ('url', 'created', 'orderer', 'deliverer', 'store', 'deliv_lat', 'deliv_lng', 'items')
+
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = User
-        fields = ('url', 'id', 'username', 'password')
+        fields = ('url', 'id', 'username', 'password', 'is_staff')
 
 class StripeUserSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = StripeUser
-        fields = ('url', 'id', 'created', 'user', 'stripe_account_id')
+        fields = '__all__'
 
 
 ################# TUTORIAL CODE #################

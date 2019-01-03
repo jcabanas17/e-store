@@ -12,6 +12,7 @@ import { ExpoLinksView } from '@expo/samples';
 
 import Delivery from '../components/Delivery';
 
+import { AsyncStorage } from 'react-native'
 
 export default class DeliverScreen extends React.Component {
   constructor (props) {
@@ -24,7 +25,6 @@ export default class DeliverScreen extends React.Component {
   };
 
   state = {
-    selectedIndex: 0,
     latitude: null,
     longitude: null,
     posError: null,
@@ -32,9 +32,29 @@ export default class DeliverScreen extends React.Component {
   }
 
   handleDelete(url) {
-    fetch(url, {method: 'DELETE'})
+      headers = new Headers({
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      })
+      if (this.state.token != null) {
+        // headers.set('Authorization',('Token ' + this.state.token))
+      }
+    fetch(url, {
+        method: 'DELETE',
+        headers: headers   
+      })
     .then(() => {
-      fetch('http://172.20.10.8:9999/orders')
+      headers = new Headers({
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      })
+      if (this.state.token != null) {
+        // headers.set('Authorization',('Token ' + this.state.token))
+      }
+      fetch('http://172.20.10.8:9999/orders/', {
+        method: 'GET',
+        headers: headers, 
+      })
       .then((response) => response.json())
       .then((responseJson) => {
         result = responseJson.results;
@@ -48,11 +68,42 @@ export default class DeliverScreen extends React.Component {
         console.error(error);
       })
     })
+    .catch((error) =>{
+      console.error(error);
+    })
   }
 
-  componentDidMount() {
-    this.props.navigation.addListener('willFocus', (playload)=>{
-      fetch('http://172.20.10.8:9999/orders')
+  async getToken() {
+    try {
+      const value = await AsyncStorage.getItem('token');
+      if (value !== null) {
+        this.setState({
+          token: value,
+          isAuthenticated: true,
+        })
+      }
+      else {
+        // Alert.alert("no credentials found")
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  addListener() {
+    this.props.navigation.addListener('willFocus', (playload) => {
+
+      headers = new Headers({
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      })
+      if (this.state.token != null) {
+        // headers.set('Authorization',('Token ' + this.state.token))
+      }
+      fetch('http://172.20.10.8:9999/orders/', {
+        method: 'GET',
+        headers: headers,    
+      })
       .then((response) => response.json())
       .then((responseJson) => {
         result = responseJson.results;
@@ -65,18 +116,50 @@ export default class DeliverScreen extends React.Component {
       .catch((error) =>{
         console.error(error);
       });
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          this.setState({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            posError: null,
-          });
-        },
-        (error) => this.setState({ posError: error.message }),
-        { enableHighAccuracy: false, timeout: 20000, maximumAge: 1000 },
-      )
     })
+  }
+
+  componentDidMount() {
+    this.getToken().then(() => {
+      this.addListener()
+    })
+    .then(() => {
+
+      headers = new Headers({
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      })
+      if (this.state.token != null) {
+        // headers.set('Authorization',('Token ' + this.state.token))
+      }
+      fetch('http://172.20.10.8:9999/orders/', {
+        method: 'GET',
+        headers: headers   
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        result = responseJson.results;
+        this.setState({
+          isLoadingOrders: false,
+          orderResponse: result,
+        }, function(){
+        });
+      })
+      .catch((error) =>{
+        console.error(error);
+      });
+    })
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        this.setState({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          posError: null,
+        });
+      },
+      (error) => this.setState({ posError: error.message }),
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 1000 },
+    )
     return null
   }
 
@@ -105,31 +188,18 @@ export default class DeliverScreen extends React.Component {
   render() {
     return (
       <View style={styles.screenContainer}>
-        <View style={styles.headerContainer}>
-        {
-          Platform.OS === 'ios' 
-          ? 
-          <SegmentedControlIOS
-            values={['U-Store']}
-            // , 'C-Store', 'Wawa']}
-            selectedIndex={this.state.selectedIndex}
-            onChange={(event) => {
-              this.setState({selectedIndex: event.nativeEvent.selectedSegmentIndex});
-            }}
-            style={styles.segmentedControl}
-          />  
-          : 
-          <Button title="segmented controler unavailable for android"></Button>
-        }
-
-        </View>
-        <ScrollView contentContainerStyle={styles.shoppingContainer}>
-        {this.state.isLoadingOrders === false ?
+        <ScrollView contentContainerStyle={styles.orderContainer}>   
+        {/*<Text>{JSON.stringify(this.state.orderResponse, null, '\t')}</Text>*/}
+  
+        {/* ALL PENDING ORDERS DISPLAYED HERE */}
+        {this.state.isLoadingOrders === false && this.state.orderResponse != null ?
         this.state.orderResponse.map((order, index) => {
-          return(<Delivery key={index} url={order.url} lat={this.state.latitude} lng={this.state.longitude} delete={() => this.handleDelete(order.url)}/>)
+          return(<Delivery key={index} json={order} delete={() => this.handleDelete(order.url)}/>)
         }
         )
         : ''}
+        
+
         </ScrollView>
       </View>
     );
@@ -137,45 +207,14 @@ export default class DeliverScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    backgroundColor: 'white',
-    alignItems: 'center',
-  },
   screenContainer: {
-    flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: 'orange',
+    flex: 1
   },
   segmentedControl: {
     width: "100%",
     height: 40,
   },
-  sectionHeader: {
-    paddingTop: 5,
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingBottom: 5,
-    fontSize: 16,
-    fontWeight: 'bold',
-    backgroundColor: '#DDD',
-  },
-  itemTitle: {
-    // padding: 10,
-    fontSize: 20,
-    marginLeft: 15
-    // height: 44,
-  },
-  itemPrice: {
-    // padding: 10,
-    marginLeft: 15,
-    fontSize: 20,
-    // height: 44,
-    color: 'green'
-  },
-  itemContainer: {
-    flexDirection: 'row',
-    width: '100%'
-  },
-  shoppingContainer: {
-
+  orderContainer: {
   }
 });

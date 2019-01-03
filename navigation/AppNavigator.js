@@ -13,5 +13,5 @@ export default createSwitchNavigator({
   Waiting: WaitingScreen
 },
 {
-	initialRouteName: 'Auth',
+	initialRouteName: 'Main',
 });

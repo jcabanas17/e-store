@@ -1,17 +1,14 @@
 from django.db import models
 from datetime import datetime
 
-class Item(models.Model):
-    created = models.DateTimeField(auto_now_add=True)
-    title = models.CharField(max_length=100, blank=True, default='')
-    price = models.DecimalField(max_digits=6, decimal_places=2)
-    store = models.ForeignKey('Store', on_delete=models.CASCADE, blank=True, null=True)
+# POST SAVE imports
+from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
 
-    def __str__(self):
-        return self.title
-
-    class Meta:
-        ordering = ('created',)
+# Auth token generation imports
+from django.contrib.auth.models import User
 
 class Store(models.Model):
     created = models.DateTimeField(auto_now_add=True)
@@ -22,8 +19,14 @@ class Store(models.Model):
     def __str__(self):
         return self.name
 
-    class Meta:
-        ordering = ('created',)
+class Item(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    title = models.CharField(max_length=100, blank=True, default='')
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+    store = models.ForeignKey('Store', on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return self.title
 
 class Order(models.Model):
     created = models.DateTimeField(auto_now_add=True)
@@ -32,7 +35,12 @@ class Order(models.Model):
     store = models.ForeignKey('Store', on_delete=models.CASCADE)
     deliv_lat = models.DecimalField(max_digits=9, decimal_places=6)
     deliv_lng = models.DecimalField(max_digits=9, decimal_places=6)
-    items = models.ManyToManyField(Item, blank=True)
+    items = models.ManyToManyField(
+        Item, 
+        through='OrderItem',
+        through_fields=('order', 'item'),
+        blank=True
+    )
 
     @property
     def orderTotal(self):
@@ -42,8 +50,11 @@ class Order(models.Model):
             
         return total
 
-    def __str__(self):
-        return 'delivery for ' + orderer + ' on ' + str(created)
+class OrderItem(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    count = models.IntegerField(default=1)
+    order = models.ForeignKey(Order, blank=True, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, blank=True, on_delete=models.CASCADE)
 
 class StripeUser(models.Model):
     created = models.DateTimeField(auto_now_add=True)
