@@ -59,25 +59,37 @@ export default class HomeScreen extends React.Component {
 
   componentDidMount() {
     // get authentication token from async storage then fetch items
-    return this.getToken()
+    return this.getUserInfo()
     .then(() => {
       this.fetchItems()
       this.getPos()
     })
   }
 
-  async getToken() {
+  async getUserInfo() {
     try {
       const value = await AsyncStorage.getItem('token');
       if (value !== null) {
         this.setState({
           token: value,
-          isAuthenticated: true,
         })
-        // Alert.alert(value)
       }
       else {
        Alert.alert("no credentials found")
+      }
+    } catch (error) {
+      console.error(error)
+    }
+    try {
+      const value = await AsyncStorage.getItem('user_id');
+      if (value !== null) {
+        this.setState({
+          user_id: value,
+          isAuthenticated: true,
+        })
+      }
+      else {
+       Alert.alert("no user id found")
       }
     } catch (error) {
       console.error(error)
@@ -180,7 +192,7 @@ export default class HomeScreen extends React.Component {
       method: 'POST',
       headers: headers,
       body: JSON.stringify({
-        orderer: 'http://localhost:9999/users/2/',
+        orderer: 'http://localhost:9999/users/'+this.state.user_id+'/',
         deliverer: null,
         store: store,
         deliv_lat: this.state.latitude.toFixed(6),

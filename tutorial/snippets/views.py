@@ -4,11 +4,27 @@ from rest_framework import viewsets, generics, permissions
 from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 from snippets.permissions import IsAdminUserOrReadOnly
 from django.utils import timezone
 
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
+
+class CustomAuthToken(ObtainAuthToken):
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user_id': user.pk,
+        })
 
 
 class ItemViewSet(viewsets.ModelViewSet):
@@ -72,6 +88,19 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     # permission_classes = (permissions.IsAuthenticated,)
+    def create(self, request):
+        print(request.data)
+        try:
+            is_staff = False
+            if 'is_staff' in request.data and request.data['is_staff'] == 'true':
+                is_staff = True
+
+            user = User.objects.create_user(username=request.data['username'], password=request.data['password'], is_staff=is_staff)
+
+        except Exception as e:
+            return JsonResponse({'success': 'false', 'error': str(e)}, status=400)
+
+        return JsonResponse({'success': 'true'}, status=201)
 
 class StripeUserViewSet(viewsets.ModelViewSet):
     queryset = StripeUser.objects.all()

@@ -5,7 +5,8 @@ import {
   StyleSheet,
   Platform,
   TouchableOpacity,
-  Alert
+  Alert,
+  Linking
 } from 'react-native';
 import { Icon } from 'expo';
 
@@ -43,7 +44,7 @@ export default class Delivery extends React.Component {
     if (ordererURL == null) {
       this.setState({
         isLoadingOrderer: false,
-        orderer: null
+        orderer: {username: 'null'}
       })
       return Promise.resolve();
     }
@@ -60,7 +61,7 @@ export default class Delivery extends React.Component {
       console.error(error);
     })
   }
-  fetchItem(itemURL) {
+  fetchItem(itemURL, count) {
     if (itemURL == null) {
       this.setState({
         items: []
@@ -70,22 +71,16 @@ export default class Delivery extends React.Component {
     return fetch(itemURL)
     .then((response) => response.json())
     .then((responseJson) => {
-      this.state.price += parseFloat(responseJson.price)
-      if (this.state.items == []){
-        this.setState({
-          items: [responseJson],
-          isLoadingItems: false,
-          price: this.state.price
-        })  
-      }
-      else {
-        items = this.state.items
+      this.state.price += parseFloat(responseJson.price)*count
+      items = this.state.items
+
+      for (var i = 0; i < count; i++){
         items.push(responseJson)
-        this.setState({
-          items: items,
-          isLoadingItems: false
-        }) 
       }
+      this.setState({
+        items: items,
+        price: this.state.price
+      }) 
     })
     .catch((error) => {
       console.error(error);
@@ -93,9 +88,12 @@ export default class Delivery extends React.Component {
   }
 
   getItems(){
-    for (var item in this.props.json.items) {
-      this.fetchItem(this.props.json.items[item])
+    for (var orderitem in this.props.json.items) {
+      this.fetchItem(this.props.json.items[orderitem].item, this.props.json.items[orderitem].count)
     }
+    this.setState({
+      isLoadingItems: false
+    })
   }
 
   componentDidMount() {
@@ -117,22 +115,29 @@ export default class Delivery extends React.Component {
     return (
       this.state.isLoading === false ?
       <View style={styles.container}>
-        {this.state.isLoadingItems === false ? '' : <Text>Items Loading</Text>}
+        {/*<Text>{JSON.stringify(this.state.store,null,'\t')}</Text>*/}
+      
+        <Text style={styles.linkText} onPress={() => {
+            destination = this.props.json.deliv_lat+','+this.props.json.deliv_lng
+            origin = this.state.store.lat+','+this.state.store.lng
+            url = 'https://www.google.com/maps/dir/?api=1&travelmode=walking&destination='+destination+'&origin='+origin
+            // Alert.alert(url)
+            Linking.openURL(url)
+          }
+        }>Directions</Text>
+        
+        {this.state.isLoadingItems === false ? '' : <Text style={styles.text}>Items loading...</Text>}
 
         {/* ORDER INFO */}
-        {this.state.isLoadingStore === false ?
-        <Text style={styles.text}>store: {this.state.store.name}</Text>
-        : 'loading'
-        }
-        <Text style={styles.text}>no. items: {this.props.json.items.length}</Text>
-        <Text style={styles.text}>order total: ${this.state.price}</Text>
-        <Text style={styles.text}>time active: {minsActive}min(s)</Text>
-        {this.state.isLoadingOrderer === false ?
+        <Text style={styles.text}>store: {this.state.isLoadingStore === false ? this.state.store.name : 'loading...'}</Text>
+        
+        <Text style={styles.text}>no. items: {this.state.isLoadingItems === false ? this.state.items.length : 'loading...'}</Text>
 
-        this.state.orderer != null ?
-        <Text style={styles.text}>orderer: {this.state.orderer.username}</Text> : <Text style={styles.text}>orderer: NULL</Text>
-        : 'loading'
-        }
+        <Text style={styles.text}>order total: {this.state.isLoadingItems === false ? '$'+this.state.price : 'loading...'}</Text>
+        <Text style={styles.text}>time active: {minsActive}min(s)</Text>
+
+        
+        <Text style={styles.text}>orderer: {this.state.isLoadingOrderer === false ? this.state.orderer.username: 'loading...'}</Text>
 
         {/* BUTTON 1 */}
         <TouchableOpacity style={styles.pickUpButton}>
@@ -144,7 +149,10 @@ export default class Delivery extends React.Component {
         </TouchableOpacity>
       </View>
 
-      : <Text>'loading'</Text>
+      : 
+      <View style={styles.container}>
+        <Text style={styles.text}>Loading...</Text>
+      </View>
     );
   }
 }
@@ -160,6 +168,10 @@ const styles = StyleSheet.create({
   },
   text:{
     fontSize: 20
+  },
+  linkText:{
+    fontSize: 20,
+    color: 'blue'
   },
   buttonText: {
     fontSize: 20

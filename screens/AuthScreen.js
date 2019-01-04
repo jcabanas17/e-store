@@ -9,14 +9,16 @@ import {
   Alert
 } from 'react-native';
 import { ExpoConfigView } from '@expo/samples';
-
-import { AsyncStorage } from "react-native"
+import { Ionicons } from '@expo/vector-icons';
+import { AsyncStorage } from "react-native";
 
 export default class AuthScreen extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      login: true
+      login: true,
+      password: '',
+      confirm_password: ''
     }
 
   }
@@ -25,7 +27,6 @@ export default class AuthScreen extends React.Component {
   };
 
   componentDidMount() {
-
   }
 
   onPressModeButton() {
@@ -54,6 +55,21 @@ export default class AuthScreen extends React.Component {
     }
   }
 
+  async storeUser(user_id) {
+    try {
+      await AsyncStorage.setItem('user_id', String(user_id));
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  handleErrors(response) {
+    if (!response.ok) {
+        throw Error('Username or Password Incorrect');
+    }
+    return response;
+  } 
+
   onPressLogIn() {
     // this.props.navigation.navigate('Main')
     return fetch('http://172.20.10.8:9999/api-auth/', {
@@ -67,6 +83,7 @@ export default class AuthScreen extends React.Component {
         password: this.state.password,
       }),
     })
+    .then(this.handleErrors)
     .then((response) => response.json())
     .then((responseJSON) => {
       if (responseJSON.hasOwnProperty('token')) {
@@ -75,15 +92,26 @@ export default class AuthScreen extends React.Component {
       }
       else {
       }
+      if (responseJSON.hasOwnProperty('user_id')) {
+        this.storeUser(responseJSON.user_id)
+        this.checkToken()
+      }
+      else {
+      }
     })
     .catch((error) =>{
-      Alert.alert(error);
+      Alert.alert(String(error));
     });
   }
 
   onPressSignUp() {
-    Alert.alert('error: sign up not yet implemented')
-    this.props.navigation.navigate('Auth')
+    if (this.state.password != this.state.confirm_password) {
+      Alert.alert('Passwords Must Match')
+    }
+    else {
+      Alert.alert('error: sign up not yet implemented')
+    }
+    // this.props.navigation.navigate('Auth')
   }
 
   textValue() {
@@ -126,12 +154,17 @@ export default class AuthScreen extends React.Component {
           <View style={styles.loginButtonContainer}>
             <TextInput
               style={styles.input}
-              onChangeText={(password) => this.setState({password})}
+              onChangeText={(confirm_password) => this.setState({confirm_password})}
               placeholder="Confirm Password"
               autoCapitalize="none"
               autoCorrect={false}
               secureTextEntry={true}
             />
+            {this.state.password != this.state.confirm_password && this.state.confirm_password != '' ? 
+            <Text style={styles.infoText}>Passwords Do Not Match</Text> : ''}
+
+            {/*<Ionicons name="md-checkmark-circle" size={32} color="green" /> */}
+
             <TouchableOpacity style={styles.button} onPress={this.onPressSignUp.bind(this)}>
               <Text style={styles.buttonText}>Sign Up</Text>
             </TouchableOpacity>
@@ -153,6 +186,10 @@ const styles = StyleSheet.create({
     fontSize: 50,
     textAlign: 'center',
     marginBottom: 30,
+  },
+  infoText: {
+    fontSize: 18,
+    textAlign: 'center',
   },
   screenContainer: {
     flex: 1,
